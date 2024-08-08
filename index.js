@@ -1,7 +1,10 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+
 const mongoose = require('mongoose');
 
 const TaskRoutes = require('./routes/TaskRoutes');
+const UserRoutes = require('./routes/UserRoutes');
 
 require('dotenv').config();
 
@@ -18,7 +21,10 @@ try {
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
+
 app.use('/tasks', TaskRoutes);
+app.use('/auth', UserRoutes);
 
 app.listen(PORT, (err) => {
   if (err) { console.error(err); }

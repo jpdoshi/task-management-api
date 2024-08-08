@@ -1,8 +1,10 @@
 const TaskModel = require('../models/TaskModel');
 
-const getAllTasks = async (req, res) => {
+const getAllTasks = async (req,  res) => {
   try {
-    const tasks = await TaskModel.find();
+    const tasks = await TaskModel.find({
+      user: req.user._id
+    });
 
     res.json(tasks);
   } catch (err) {
@@ -15,7 +17,11 @@ const getTaskById = async (req, res) => {
     const tasks = await TaskModel
       .findById(req.params.id);
 
-    res.json(tasks);
+    if (tasks.user == req.user._id) {
+      res.json(tasks);
+    } else {
+      res.status(404).json({});
+    }
   } catch (err) {
     res.status(500).send(err);
   }
@@ -24,7 +30,7 @@ const getTaskById = async (req, res) => {
 const createTask = async (req, res) => {
   try {
     const tasks = await TaskModel
-      .create(req.body);
+      .create({user: req.user._id, ...req.body});
 
     res.json(tasks);
   } catch (err) {
@@ -37,7 +43,7 @@ const updateTask = async (req, res) => {
     let task = await TaskModel
       .findById(req.params.id);
 
-    if (task) {
+    if (task && task.user == req.user._id) {
       task = await TaskModel
         .findByIdAndUpdate(
           task._id, req.body, { new: 1 }
@@ -57,7 +63,7 @@ const deleteTask = async (req, res) => {
     let task = await TaskModel
       .findById(req.params.id);
 
-    if (task) {
+    if (task && task.user == req.user._id) {
       task = await TaskModel
         .findByIdAndDelete(task._id, req.body);
       
