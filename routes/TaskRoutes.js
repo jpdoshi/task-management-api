@@ -1,7 +1,7 @@
 const express = require('express');
 
 const TaskController = require('../controllers/TaskController');
-const authMiddleware = require('../auth');
+const authMiddleware = require('../middlewares/auth');
 
 const TaskRoutes = express.Router();
 
