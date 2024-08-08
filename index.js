@@ -1,10 +1,10 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
-
 const mongoose = require('mongoose');
 
 const TaskRoutes = require('./routes/TaskRoutes');
 const UserRoutes = require('./routes/UserRoutes');
+const ErrorHandler = require('./middlewares/CustomError');
 
 require('dotenv').config();
 
@@ -26,7 +26,26 @@ app.use(cookieParser());
 app.use('/tasks', TaskRoutes);
 app.use('/auth', UserRoutes);
 
-app.listen(PORT, (err) => {
+app.use(ErrorHandler);
+
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+http.listen(PORT, (err) => {
   if (err) { console.error(err); }
   console.log(`App is listening on PORT:${PORT}`);
 });
+
+io.on('connection', (socket) => {
+  console.log(`${socket.id} connected!`);
+
+  socket.on('disconnect', () => {
+    console.log(`${socket.id} disconnected!`);
+  });
+
+  socket.on('taskUpdate', () => {
+    console.log('Task Updated!');
+  });
+});
+
+app.io = io;

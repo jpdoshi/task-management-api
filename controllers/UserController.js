@@ -39,7 +39,7 @@ const registerUser = async (req, res) => {
           });
     });
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
@@ -77,7 +77,7 @@ const loginUser = async (req, res) => {
         });
     }
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
@@ -115,7 +115,7 @@ const getUserProfile = async (req, res) => {
         });
     }
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 

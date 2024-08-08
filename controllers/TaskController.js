@@ -8,7 +8,7 @@ const getAllTasks = async (req,  res) => {
 
     res.json(tasks);
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
@@ -23,18 +23,19 @@ const getTaskById = async (req, res) => {
       res.status(404).json({});
     }
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
 const createTask = async (req, res) => {
   try {
-    const tasks = await TaskModel
+    const task = await TaskModel
       .create({user: req.user._id, ...req.body});
 
-    res.json(tasks);
+    req.app.io.emit('taskCreate', { msg: 'Task Updated!', task });
+    res.json(task);
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
@@ -48,13 +49,14 @@ const updateTask = async (req, res) => {
         .findByIdAndUpdate(
           task._id, req.body, { new: 1 }
         );
-      
+
+      req.app.io.emit('taskUpdate', { msg: 'Task Updated!', task });
       res.json(task);
     } else {
       res.status(404).send('Task Not Found!');
     }
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 }
 
@@ -67,12 +69,50 @@ const deleteTask = async (req, res) => {
       task = await TaskModel
         .findByIdAndDelete(task._id, req.body);
       
+      req.app.io.emit('taskDelete', { msg: 'Task Deleted!', task });
       res.json(task);
     } else {
       res.status(404).send('Task Not Found!');
     }
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
+  }
+}
+
+const getComments = async (req, res) => {
+  try {
+    let task = await TaskModel
+      .findById(req.params.id);
+
+    if (task) {
+      res.json(task.comments);
+    } else {
+      res.status(404).json({});
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+const addComment = async (req, res) => {
+  try {
+    let task = await TaskModel
+      .findById(req.params.id);
+
+    if (task) {
+      let comments = task.comments;
+      comments.push({ user: req.user._id, text: req.body.comment });
+
+      task = await TaskModel
+        .findByIdAndUpdate(task._id, { comments }, { new: true });
+
+      req.app.io.emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
+      res.json(task);
+    } else {
+      res.status(404).json({});
+    }
+  } catch (err) {
+    next(err);
   }
 }
 
@@ -81,7 +121,9 @@ const TaskController = {
   getTaskById,
   createTask,
   updateTask,
-  deleteTask
+  deleteTask,
+  getComments,
+  addComment
 };
 
 module.exports = TaskController;
