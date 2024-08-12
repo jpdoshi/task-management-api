@@ -6,24 +6,44 @@ const getAllTasks = async (req,  res) => {
       user: req.user._id
     });
 
-    res.json(tasks);
-  } catch (err) {
-    next(err);
+    res.json({
+      statusCode: 200,
+      success: true,
+      data: tasks
+    });
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
 const getTaskById = async (req, res) => {
   try {
-    const tasks = await TaskModel
+    const task = await TaskModel
       .findById(req.params.id);
 
-    if (tasks.user == req.user._id) {
-      res.json(tasks);
+    if (task) {
+      res.json({
+        statusCode: 200,
+        success: true,
+        data: task
+      });
     } else {
-      res.status(404).json({});
+      res.status(404).json({
+        statusCode: 404,
+        success: false,
+        error: 'Could Not Find Task'
+      });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
@@ -32,10 +52,18 @@ const createTask = async (req, res) => {
     const task = await TaskModel
       .create({user: req.user._id, ...req.body});
 
-    req.app.io.emit('taskCreate', { msg: 'Task Updated!', task });
-    res.json(task);
-  } catch (err) {
-    next(err);
+    req.app.io.emit('taskCreate', { msg: 'Task Created!', task });
+    res.json({
+      statusCode: 201,
+      success: true,
+      data: task
+    });
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
@@ -53,10 +81,18 @@ const updateTask = async (req, res) => {
       req.app.io.emit('taskUpdate', { msg: 'Task Updated!', task });
       res.json(task);
     } else {
-      res.status(404).send('Task Not Found!');
+      res.status(404).send({
+        statusCode: 404,
+        success: false,
+        error: 'Task Not Found!'
+      });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
@@ -70,12 +106,24 @@ const deleteTask = async (req, res) => {
         .findByIdAndDelete(task._id, req.body);
       
       req.app.io.emit('taskDelete', { msg: 'Task Deleted!', task });
-      res.json(task);
+      res.json({
+        statusCode: 200,
+        success: true,
+        data: task
+      });
     } else {
-      res.status(404).send('Task Not Found!');
+      res.status(404).send({
+        statusCode: 404,
+        success: false,
+        error: 'Task Not Found!'
+      });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
@@ -85,12 +133,24 @@ const getComments = async (req, res) => {
       .findById(req.params.id);
 
     if (task) {
-      res.json(task.comments);
+      res.json({
+        statusCode: 200,
+        success: true,
+        data: task.comments
+      });
     } else {
-      res.status(404).json({});
+      res.status(404).json({
+        statusCode: 404,
+        success: false,
+        error: 'Could Not Find Task'
+      });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 
@@ -107,12 +167,24 @@ const addComment = async (req, res) => {
         .findByIdAndUpdate(task._id, { comments }, { new: true });
 
       req.app.io.emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
-      res.json(task);
+      res.json({
+        statusCode: 201,
+        success: true,
+        data: task
+      });
     } else {
-      res.status(404).json({});
+      res.status(404).json({
+        statusCode: 404,
+        success: false,
+        error: 'Could Not Create Comment'
+      });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return res.status(400).json({
+      statusCode: 400,
+      success: false,
+      error
+    });
   }
 }
 

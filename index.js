@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 
 const TaskRoutes = require('./routes/TaskRoutes');
 const UserRoutes = require('./routes/UserRoutes');
-const ErrorHandler = require('./middlewares/CustomError');
 
 require('dotenv').config();
 
@@ -25,8 +24,6 @@ app.use(cookieParser());
 
 app.use('/tasks', TaskRoutes);
 app.use('/auth', UserRoutes);
-
-app.use(ErrorHandler);
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
