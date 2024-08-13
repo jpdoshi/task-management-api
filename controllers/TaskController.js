@@ -52,7 +52,7 @@ const createTask = async (req, res) => {
     const task = await TaskModel
       .create({user: req.user._id, ...req.body});
 
-    req.app.io.emit('taskCreate', { msg: 'Task Created!', task });
+    req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskCreate', { msg: 'Task Created!', task });
     res.json({
       statusCode: 201,
       success: true,
@@ -78,7 +78,7 @@ const updateTask = async (req, res) => {
           task._id, req.body, { new: 1 }
         );
 
-      req.app.io.emit('taskUpdate', { msg: 'Task Updated!', task });
+      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskUpdate', { msg: 'Task Updated!', task });
       res.json(task);
     } else {
       res.status(404).send({
@@ -105,7 +105,7 @@ const deleteTask = async (req, res) => {
       task = await TaskModel
         .findByIdAndDelete(task._id, req.body);
       
-      req.app.io.emit('taskDelete', { msg: 'Task Deleted!', task });
+      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskDelete', { msg: 'Task Deleted!', task });
       res.json({
         statusCode: 200,
         success: true,
@@ -159,14 +159,14 @@ const addComment = async (req, res) => {
     let task = await TaskModel
       .findById(req.params.id);
 
-    if (task) {
+    if (task && req.body.comment) {
       let comments = task.comments;
       comments.push({ user: req.user._id, text: req.body.comment });
 
       task = await TaskModel
         .findByIdAndUpdate(task._id, { comments }, { new: true });
 
-      req.app.io.emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
+      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
       res.json({
         statusCode: 201,
         success: true,

@@ -24,9 +24,18 @@ app.use(cookieParser());
 
 app.use('/tasks', TaskRoutes);
 app.use('/auth', UserRoutes);
+app.use ((req, res) => {
+  res.status(404).json({
+    statusCode: 404,
+    success: false,
+    msg: 'Route Not Found!'
+  })
+});
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+
+let onlineUsers = {};
 
 http.listen(PORT, (err) => {
   if (err) { console.error(err); }
@@ -34,15 +43,13 @@ http.listen(PORT, (err) => {
 });
 
 io.on('connection', (socket) => {
-  console.log(`${socket.id} connected!`);
+  const userId = socket.handshake.query.userId;
+  onlineUsers[userId] = socket.id;
 
   socket.on('disconnect', () => {
-    console.log(`${socket.id} disconnected!`);
-  });
-
-  socket.on('taskUpdate', () => {
-    console.log('Task Updated!');
+    delete onlineUsers[userId];
   });
 });
 
 app.io = io;
+app.onlineUsers = onlineUsers;

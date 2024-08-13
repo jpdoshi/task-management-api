@@ -17,21 +17,6 @@ const registerUser = async (req, res) => {
             name, email, password: hashed
           })
           .then((user) => {
-            const maxAge = 2 * 60 * 60; // 2 hr
-            
-            const token = jwt.sign({
-              _id: user._id,
-              name: user.name,
-              email: user.email,
-            }, JWT_SECRET, {
-              expiresIn: maxAge
-            });
-
-            res.cookie('jwt', token, {
-              httpOnly: true,
-              maxAge: maxAge * 1000
-            });
-
             res.status(201).json({
               statusCode: 201,
               success: true,
@@ -57,8 +42,8 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const user = await UserModel.findOne({ name, email });
+    const { email, password } = req.body;
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       res.status(404).send({
@@ -88,7 +73,7 @@ const loginUser = async (req, res) => {
             res.json({
               statusCode: 200,
               success: true,
-              data: user
+              data: 'Login Success!'
             });
           } else {
               res.status(400).json({
@@ -111,7 +96,6 @@ const loginUser = async (req, res) => {
 const getUserProfile = async (req, res) => {
   try {
     const { email } = req.body;
-
     const user = await UserModel.findOne({ email });
 
     if (!user) {
@@ -153,7 +137,7 @@ const logoutUser = (req, res) => {
       statusCode: 400,
       success: false,
       msg: 'No User Logged In!'
-    })
+    });
   }
 }
 
