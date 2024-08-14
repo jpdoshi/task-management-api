@@ -52,7 +52,12 @@ const createTask = async (req, res) => {
     const task = await TaskModel
       .create({user: req.user._id, ...req.body});
 
-    req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskCreate', { msg: 'Task Created!', task });
+    if (req.app.onlineUsers[(req.user._id).toString()]) {
+      req.app.io
+        .to(req.app.onlineUsers[(req.user._id).toString()])
+        .emit('taskCreate', { msg: 'Task Created!', task });
+    }
+
     res.json({
       statusCode: 201,
       success: true,
@@ -78,7 +83,12 @@ const updateTask = async (req, res) => {
           task._id, req.body, { new: 1 }
         );
 
-      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskUpdate', { msg: 'Task Updated!', task });
+      if (req.app.onlineUsers[(req.user._id).toString()]) {
+        req.app.io
+          .to(req.app.onlineUsers[(req.user._id).toString()])
+          .emit('taskUpdate', { msg: 'Task Updated!', task });
+      }
+
       res.json(task);
     } else {
       res.status(404).send({
@@ -105,7 +115,12 @@ const deleteTask = async (req, res) => {
       task = await TaskModel
         .findByIdAndDelete(task._id, req.body);
       
-      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('taskDelete', { msg: 'Task Deleted!', task });
+      if (req.app.onlineUsers[(req.user._id).toString()]) {
+        req.app.io
+          .to(req.app.onlineUsers[(req.user._id).toString()])
+          .emit('taskDelete', { msg: 'Task Deleted!', task });
+      }
+
       res.json({
         statusCode: 200,
         success: true,
@@ -166,7 +181,12 @@ const addComment = async (req, res) => {
       task = await TaskModel
         .findByIdAndUpdate(task._id, { comments }, { new: true });
 
-      req.app.io.to(req.app.onlineUsers[(req.user._id).toString()]).emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
+      if (req.app.onlineUsers[(req.user._id).toString()]) {
+        req.app.io
+          .to(req.app.onlineUsers[(req.user._id).toString()])
+          .emit('newComment', { msg: 'Comment Added!', comment: req.body.comment });
+      }
+
       res.json({
         statusCode: 201,
         success: true,

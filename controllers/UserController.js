@@ -54,7 +54,7 @@ const loginUser = async (req, res) => {
     } else {
       bcrypt.compare(password, user.password)
         .then((result) => {
-          if (result) {
+          if (result && !req.cookies['jwt']) {
             const maxAge = 2 * 60 * 60; // 2 hr
             
             const token = jwt.sign({
