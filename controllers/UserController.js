@@ -10,27 +10,35 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    bcrypt.hash(password, 10)
-      .then(async (hashed) => {
-        await UserModel
-          .create({
-            name, email, password: hashed
-          })
-          .then((user) => {
-            res.status(201).json({
-              statusCode: 201,
-              success: true,
-              data: user
+    if (!name || !email || !password || name.length == 0 || email.length == 0 || password.trim().length < 8) {
+      res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Provide name, email and password(min. 8 characters)'
+      });
+    } else {
+      bcrypt.hash(password, 10)
+        .then(async (hashed) => {
+          await UserModel
+            .create({
+              name, email, password: hashed
+            })
+            .then((user) => {
+              res.status(201).json({
+                statusCode: 201,
+                success: true,
+                data: user
+              });
+            })
+            .catch((error) => {
+              res.status(400).send({
+                statusCode: 400,
+                success: false,
+                error
+              });
             });
-          })
-          .catch((error) => {
-            res.status(400).send({
-              statusCode: 400,
-              success: false,
-              error
-            });
-          });
-    });
+      });
+    }
   } catch (error) {
     return res.status(400).json({
       statusCode: 400,
@@ -43,46 +51,54 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await UserModel.findOne({ email });
-
-    if (!user) {
-      res.status(404).send({
-        statusCode: 404,
+    if (!email || !password || email.length == 0 || password.length == 0) {
+      res.status(400).json({
+        statusCode: 400,
         success: false,
-        error: 'User Not Found!'
+        error: 'Provide email and password'
       });
     } else {
-      bcrypt.compare(password, user.password)
-        .then((result) => {
-          if (result && !req.cookies['jwt']) {
-            const maxAge = 2 * 60 * 60; // 2 hr
-            
-            const token = jwt.sign({
-              _id: user._id,
-              name: user.name,
-              email: user.email
-            }, JWT_SECRET, {
-              expiresIn: maxAge
-            });
+      const user = await UserModel.findOne({ email });
 
-            res.cookie('jwt', token, {
-              httpOnly: true,
-              maxAge: maxAge * 1000
-            });
-
-            res.json({
-              statusCode: 200,
-              success: true,
-              data: 'Login Success!'
-            });
-          } else {
-              res.status(400).json({
-                statusCode: 400,
-                success: false,
-                error: 'Could Not Login!'
-              });
-          }
+      if (!user) {
+        res.status(404).send({
+          statusCode: 404,
+          success: false,
+          error: 'User Not Found!'
         });
+      } else {
+        bcrypt.compare(password, user.password)
+          .then((result) => {
+            if (result && !req.cookies['jwt']) {
+              const maxAge = 2 * 60 * 60; // 2 hr
+              
+              const token = jwt.sign({
+                _id: user._id,
+                name: user.name,
+                email: user.email
+              }, JWT_SECRET, {
+                expiresIn: maxAge
+              });
+
+              res.cookie('jwt', token, {
+                httpOnly: true,
+                maxAge: maxAge * 1000
+              });
+
+              res.json({
+                statusCode: 200,
+                success: true,
+                data: 'Login Success!'
+              });
+            } else {
+                res.status(400).json({
+                  statusCode: 400,
+                  success: false,
+                  error: 'Could Not Login!'
+                });
+            }
+          });
+      }
     }
   } catch (error) {
     return res.status(400).json({

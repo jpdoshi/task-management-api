@@ -39,36 +39,60 @@ const getTaskById = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
-      success: false,
-      error
-    });
+    if (error.name == 'CastError') {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Invalid ID'
+      })
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error
+      });
+    }
   }
 }
 
 const createTask = async (req, res) => {
   try {
-    const task = await TaskModel
-      .create({user: req.user._id, ...req.body});
+    if (!req.body.title || !req.body.description) {
+      res.status(400).json({
+        statusCode: 404,
+        success: false,
+        error: 'Provide Title and Description'
+      })
+    } else {
+      const task = await TaskModel
+        .create({user: req.user._id, ...req.body});
 
-    if (req.app.onlineUsers[(req.user._id).toString()]) {
-      req.app.io
-        .to(req.app.onlineUsers[(req.user._id).toString()])
-        .emit('taskCreate', { msg: 'Task Created!', task });
+      if (req.app.onlineUsers[(req.user._id).toString()]) {
+        req.app.io
+          .to(req.app.onlineUsers[(req.user._id).toString()])
+          .emit('taskCreate', { msg: 'Task Created!', task });
+      }
+
+      res.json({
+        statusCode: 201,
+        success: true,
+        data: task
+      });
     }
-
-    res.json({
-      statusCode: 201,
-      success: true,
-      data: task
-    });
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
-      success: false,
-      error
-    });
+    if (error.name == 'CastError') {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Invalid ID'
+      })
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error
+      });
+    }
   }
 }
 
@@ -98,11 +122,19 @@ const updateTask = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
-      success: false,
-      error
-    });
+    if (error.name == 'CastError') {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Invalid ID'
+      })
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error
+      });
+    }
   }
 }
 
@@ -134,11 +166,19 @@ const deleteTask = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
-      success: false,
-      error
-    });
+    if (error.name == 'CastError') {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Invalid ID'
+      })
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error
+      });
+    }
   }
 }
 
@@ -161,11 +201,19 @@ const getComments = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
-      success: false,
-      error
-    });
+    if (error.name == 'CastError') {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error: 'Invalid ID'
+      })
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        error
+      });
+    }
   }
 }
 
