@@ -8,7 +8,7 @@ const UserRoutes = require('./routes/UserRoutes');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = `mongodb+srv://jpdoshi2811:${encodeURIComponent(process.env.MONGO_PASS)}@cluster0.pxzycum.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 try {
   mongoose.connect(MONGO_URI, { dbName: 'task_management_api' });
